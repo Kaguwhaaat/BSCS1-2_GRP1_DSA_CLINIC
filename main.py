@@ -1,6 +1,16 @@
 class Queue:
     def __init__(self):
         self.patients =[]
+    def enqueue(self, patient):
+        self.patients.append(patient)
+        print(f"{patient['name']} is now currently waiting...")
+    def dequeue(self):
+        if self.is_empty():
+            print("=== No Patients in Line ===")
+            return None
+        patient = self.patients.pop(0)
+        print(f"=== Currently Serving Patient: {patient['name']} ===")
+        return patient
 
 """Pertains to each link in LinkedList"""
 class Node:
