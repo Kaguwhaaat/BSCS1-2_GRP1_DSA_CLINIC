@@ -70,18 +70,18 @@ while True:
             print("\n=== No Patients to Serve ===")
             continue
          else:
-             break
-         
-         #Serve Patients
-         patient_number = 1
-         while not q.is_empty():
-             q.peek()
-             print(f"   Patient number: {patient_number}")
-             q.dequeue()
-             print(f"\n   Remaining Patients: {q.size()}")
-             patient_number += 1
+            #Serve Patients
+            patient_number = 1
+            while not q.is_empty():
+                q.peek()
+                print(f"   Patient number: {patient_number}")
+                q.dequeue()
+                print(f"\n   Remaining Patients: {q.size()}")
+                patient_number += 1
 
-             print("\nThere are no more patients\n")
+         print("\nThere are no more patients\n")
+        
+        
     elif choice == '3':
         #Exit the system
         while True:
