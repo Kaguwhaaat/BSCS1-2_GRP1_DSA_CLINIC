@@ -88,15 +88,18 @@ while True:
             #Ensure that the user wants to exit
             confirm_exit = input("Are you sure you want to exit? (Y/N): ").strip().upper()
             if confirm_exit == 'Y':
-                 break
+                break
             elif confirm_exit == 'N':
+                print("\nReturning to the main menu...")
                 break
             else:
                 #Invalid input handling for exit confirmation
                 print("Invalid input. Please enter 'Y' or 'N'.")
         if confirm_exit == 'Y':
             print("\nThank you for using the Clinic Administrator System!")
-        break
+            break
+        elif confirm_exit == 'N':
+            continue
     else:
         #Invalid choice handling
         print("\nInvalid choice. Please try again.")
