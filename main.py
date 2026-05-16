@@ -11,6 +11,22 @@ class Queue:
         patient = self.patients.pop(0)
         print(f"=== Currently Serving Patient: {patient['name']} ===")
         return patient
+    def peek(self):
+        if self.is_empty():
+            print("=== No Patients in Line ===")
+            return None
+        return self.patients[0]
+    def is_empty(self):
+        return len(self.patients) == 0
+    def size (self):
+        return len(self.patients)
+    def display(self):
+        if self.is_empty():
+            print("===Queue is Empty ===")
+            return
+        print("=== Current Queue ===")
+        for i, patient in enumerate(self.patients, 1):
+            print(f" [{i}] {patient['name']} | Age: {patient['age']} | Concern: {patient['concern']}")
 
 """Pertains to each link in LinkedList"""
 class Node:
