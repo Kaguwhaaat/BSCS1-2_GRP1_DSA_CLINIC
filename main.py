@@ -18,7 +18,7 @@ class Queue:
         if self.is_empty():
             return None
         else:
-            print(f"\n=== Next Patient: {self.patients[0]['name']} ===")
+            print(f"\n=== Next in Line ===")
         
         return self.patients[0]
     def is_empty(self):
@@ -28,8 +28,44 @@ class Queue:
     def to_list(self):
         return self.patients.copy()
     
+class Node:
+    def __init__(self, patient):
+        self.patient = patient
+        self.next = None
+
+class LinkedList:
+    def __init__(self):
+        self.head = None
+
+    def new_record(self, patient):
+        newNode = Node(patient)
+        if not self.head:
+            self.head = newNode
+            return
+        current = self.head
+        while current.next:
+            current = current.next
+        current.next = newNode
+
+    def display(self):
+        if not self.head:
+            print("==== No patients consulted yet ===")
+            return
+        current = self.head
+        print("=== Consulted Patients ===")
+        patient_number = 1
+        while current:
+            print(f"[{patient_number}]")
+            print(f"Patient Name: {current.patient['name']}")
+            print(f"Patient Age: {current.patient['age']}")
+            print(f"Patient Reason: {current.patient['reason']}")
+            print("==========================")
+            current = current.next
+            patient_number += 1
+    
 
 q = Queue()
+consulted = LinkedList()
 
 print("=" * 30 + "\nCLINIC ADMINISTRATOR SYSTEM\n" + "=" * 30)
 
@@ -37,7 +73,8 @@ while True:
     #Clinic Administrator System Menu
     print("\n[1] Patient Registration")
     print("[2] Serve Patients")
-    print("[3] Exit")
+    print("[3] View Consultation Record")
+    print("[4] Exit")
     choice = input("Enter Function: ").strip()
 
     if choice == '1':
@@ -71,18 +108,17 @@ while True:
             continue
          else:
             #Serve Patients
-            patient_number = 1
-            while not q.is_empty():
-                q.peek()
-                print(f"   Patient number: {patient_number}")
-                q.dequeue()
-                print(f"\n   Remaining Patients: {q.size()}")
-                patient_number += 1
+            q.peek()
+            patient = q.dequeue()
+            consulted.new_record(patient)
+            print(f"   Status: Served")
+            print(f"\n   Remaining Patients: {q.size()}")
 
-         print("\nThere are no more patients\n")
-        
         
     elif choice == '3':
+        consulted.display()
+
+    elif choice == '4':
         #Exit the system
         while True:
             #Ensure that the user wants to exit
@@ -103,19 +139,6 @@ while True:
     else:
         #Invalid choice handling
         print("\nInvalid choice. Please try again.")
-    
-
-"""Pertains to each link in LinkedList"""
-class Node:
-    def __init__(self, patient):
-        self.patient = patient
-        self.next = None
-
-class LinkedList:
-    def __init__(self):
-        self.head = None
-        self.tail = None
-        self.count = 0
 
 """To define a single node in BST"""
 class BSTNode:
