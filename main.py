@@ -99,6 +99,31 @@ class BST:
                 curP = curP.right
 
         return None
+    
+    def _inorder(self, node, result):
+
+        if node is None:
+            return
+        self._inorder(node.left, result)
+        result.append(node.patient)
+        self._inorder(node.right, result)
+
+    def display_all(self):
+
+        if self.root is None:
+            print("\n=== No Records in BST ===")
+            return
+        #Collects patient record in sorted order via inorder traversal
+        records = []
+        self._inorder(self.root,records)
+        #Prints patients alphabetically arranged
+        print("\n=== All Consulted Patients (A-Z) ===")
+        for i, patient in enumerate(records, start=1):
+            print(f"[{i}]")
+            print(f"   Name  : {patient['name']}")
+            print(f"   Age   : {patient['age']}")
+            print(f"   Reason: {patient['reason']}")
+            print("   " + "-" * 26)
 
 q = Queue()
 consulted = LinkedList()
@@ -112,7 +137,8 @@ while True:
     print("[2] Serve Patients")
     print("[3] View Consultation Record")
     print("[4] Search Patient")
-    print("[5] Exit")
+    print("[5] Display All Records")
+    print("[6] Exit")
     choice = input("Enter Function: ").strip()
 
     if choice == '1':
@@ -176,8 +202,11 @@ while True:
         
         else:
             print("Patient not found.")
- 
+
     elif choice == '5':
+        search.display_all()
+ 
+    elif choice == '6':
         #Exit the system
         while True:
             #Ensure that the user wants to exit
