@@ -54,10 +54,55 @@ class LinkedList:
             print("==========================")
             current = current.next
             patient_number += 1
+
+class BSTNode:
+    def __init__(self, patient):
+        self.patient = patient
+        self.left = None
+        self.right = None
+
+class BST:
+    def __init__(self):
+        self.root = None
     
+    def is_empty(self):
+        return self.root is None
+    
+    def insert(self, patient):
+        if self.root is None:
+            self.root = BSTNode(patient)
+            return                         
+
+        curP = self.root
+        while True:
+            if patient['name'].lower() < curP.patient['name'].lower():
+                if curP.left is None:
+                    curP.left = BSTNode(patient)
+                    break
+                curP = curP.left
+            else:
+                if curP.right is None:
+                    curP.right = BSTNode(patient)
+                    break
+                curP = curP.right          
+
+    def patient_search(self, p_name_search):  
+        target = p_name_search.lower()
+        curP = self.root
+
+        while curP is not None:
+            if curP.patient['name'].lower() == target:
+                return curP.patient
+            if target < curP.patient['name'].lower():
+                curP = curP.left
+            else:
+                curP = curP.right
+
+        return None
 
 q = Queue()
 consulted = LinkedList()
+search = BST()
 
 print("=" * 30 + "\nCLINIC ADMINISTRATOR SYSTEM\n" + "=" * 30)
 
@@ -66,7 +111,8 @@ while True:
     print("\n[1] Patient Registration")
     print("[2] Serve Patients")
     print("[3] View Consultation Record")
-    print("[4] Exit")
+    print("[4] Search Patient")
+    print("[5] Exit")
     choice = input("Enter Function: ").strip()
 
     if choice == '1':
@@ -103,14 +149,35 @@ while True:
             print("\n=== Serving Patients ===")
             patient = q.dequeue()
             consulted.new_record(patient)
+            #To save patient into the BST
+            search.insert(patient)
             print(f"   Status: Served")
             print(f"\n   Remaining Patients: {q.size()}")
 
         
     elif choice == '3':
         consulted.display()
-
+    
     elif choice == '4':
+        if search.is_empty():
+            print("\nNo consulted patient to search.")
+            continue
+
+        print("\n=== Search Patient ===")
+        Sname = input("Enter Patient Full Name: ").strip()
+
+        Found = search.patient_search(Sname)
+
+        if Found:
+            print("\n=== Patient Found ===")
+            print(f"Name : {Found['name']}")
+            print(f"Age : {Found['age']}")
+            print(f"Reason : {Found['reason']}")
+        
+        else:
+            print("Patient not found.")
+ 
+    elif choice == '5':
         #Exit the system
         while True:
             #Ensure that the user wants to exit
@@ -132,46 +199,5 @@ while True:
         #Invalid choice handling
         print("\nInvalid choice. Please try again.")
 
-class BSTNode:
-    def __init__(self, patient):
-        self.patient = patient
-        self.left = None
-        self.right = None
-
-class BST:
-    def __init__(self):
-        self.root = None
-
-    def insert(self, patient):
-        if self.root is None:
-            self.root = BSTNode(patient)
-            return                         
-
-        curP = self.root
-        while True:
-            if patient['name'].lower() < curP.patient['name'].lower():
-                if curP.left is None:
-                    curP.left = BSTNode(patient)
-                    break
-                curP = curP.left
-            else:
-                if curP.right is None:
-                    curP.right = BSTNode(patient)
-                    break
-                curP = curP.right          
-
-    def patient_search(self, p_name_search):  
-        target = p_name_search.lower()
-        curP = self.root
-
-        while curP is not None:
-            if curP.patient['name'].lower() == target:
-                return curP.patient
-            if target < curP.patient['name'].lower():
-                curP = curP.left
-            else:
-                curP = curP.right
-
-        return None
 
 """Kindly continue for the next members in  BRANCH: VERSION-ONE"""
