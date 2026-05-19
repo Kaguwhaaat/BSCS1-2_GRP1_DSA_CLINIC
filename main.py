@@ -13,14 +13,6 @@ class Queue:
         print(f"   Age   : {patient['age']}")
         print(f"   Reason: {patient['reason']}")
         return patient
-    def peek(self):
-        
-        if self.is_empty():
-            return None
-        else:
-            print(f"\n=== Next in Line ===")
-        
-        return self.patients[0]
     def is_empty(self):
         return len(self.patients) == 0
     def size(self):
@@ -108,7 +100,7 @@ while True:
             continue
          else:
             #Serve Patients
-            q.peek()
+            print("\n=== Serving Patients ===")
             patient = q.dequeue()
             consulted.new_record(patient)
             print(f"   Status: Served")
@@ -150,38 +142,36 @@ class BST:
     def __init__(self):
         self.root = None
 
-def insert(self, patient):
-    if self.root is None:
-        self.root = BSTNode(patient)
-    return
+    def insert(self, patient):
+        if self.root is None:
+            self.root = BSTNode(patient)
+            return                         
 
-curP = self.root
-while True:
-    if patient['name'].lower() < curP.patient['name'].lower():
-        if curP.left is None:
-            curP.left = BSTNode(patient)
-            break
-            curP = curP.left
-        else:
-         if curP.right is None:
-             curP.right = BSTNode(patient)
-             break 
-        curP = curP.right
+        curP = self.root
+        while True:
+            if patient['name'].lower() < curP.patient['name'].lower():
+                if curP.left is None:
+                    curP.left = BSTNode(patient)
+                    break
+                curP = curP.left
+            else:
+                if curP.right is None:
+                    curP.right = BSTNode(patient)
+                    break
+                curP = curP.right          
 
-    def patient_search(self, p_name_search):
+    def patient_search(self, p_name_search):  
         target = p_name_search.lower()
         curP = self.root
 
         while curP is not None:
             if curP.patient['name'].lower() == target:
                 return curP.patient
-
             if target < curP.patient['name'].lower():
                 curP = curP.left
             else:
                 curP = curP.right
 
         return None
-
 
 """Kindly continue for the next members in  BRANCH: VERSION-ONE"""
