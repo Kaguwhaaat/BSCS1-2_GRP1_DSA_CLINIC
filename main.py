@@ -1,3 +1,5 @@
+from getpass import getpass
+
 class Queue:
     def __init__(self):
         self.patients =[]
@@ -125,11 +127,47 @@ class BST:
             print(f"   Reason: {patient['reason']}")
             print("   " + "-" * 26)
 
+# LOGIN SYSTEM TO AUTHENTICATE
+
+SYSTEM_USERNAME = "Admin"
+SYSTEM_PASSWORD = "123Clinic"
+
+print("=" * 30)
+print("CLINIC LOGIN SYSTEM")
+print("=" * 30)
+
+attempts = 3
+
+while attempts > 0:
+    username = input("Enter Username: ").strip()
+    password = getpass("Enter Password: ").strip() 
+    #ADDED GETPASS FOR PASSWORD INVISIBILITY
+
+    if username == SYSTEM_USERNAME and password == SYSTEM_PASSWORD:
+        print("\nLogin Successful!")
+        break
+    else:
+        attempts -= 1
+        print("\nInvalid Username or Password.")
+        print("=" * 30)
+        print(f"Attempts Remaining: {attempts}")
+
+if attempts == 0:
+    print("\nToo many failed attempts.")
+    print("System Locked.")
+    exit()
+
+# START OF THE MAIN SYSTEM
+
 q = Queue()
 consulted = LinkedList()
 search = BST()
 
 print("=" * 30 + "\nCLINIC ADMINISTRATOR SYSTEM\n" + "=" * 30)
+
+
+def format_name(name):
+         return name.title()
 
 while True:
     #Clinic Administrator System Menu
@@ -145,25 +183,37 @@ while True:
         #Patient Registration
         print("\n=== Patient Registration ===")
         name = input("Enter Patient Name: ").strip()
-        age = input("Enter Patient Age: ").strip()
-        reason = input("Enter Reason for Visit: ").strip()
+        name = format_name(name)
 
+        while True:
+            age = input("Enter Patient Age: ").strip()
+        
         #Error handling for empty name and non-numeric age
-        if not name:
-            print("Name cannot be empty. Please try again.")
-            continue
+            if  not name:
+                print("Name cannot be empty. Please try again.")
+                continue
 
-        if not age.isdigit():
-            print("Invalid age. Please enter a number.")
-            continue
+        #Error handling for unrealistic age negative and over 120
 
-        #Enqueue the patient to the queue
-        q.enqueue({'name': name, 'age': int(age), 'reason': reason})
+            if not age.isdigit():
+                print("Invalid age. Please enter a number.")
+                continue
 
-        #Display the current queue of patients
-        print("\nCurrent Queue:")
-        for number, patient in enumerate(q.to_list(), start=1):
-            print(f"   [{number}] {patient['name']}")
+            age = int(age)
+
+            if age < 1 or age > 120:
+                print("Please enter a realistic age (1-120).")
+                continue
+                
+            reason = input("Enter Reason for Visit: ").strip()
+
+            #Enqueue the patient to the queue
+            q.enqueue({'name': name, 'age': age, 'reason': reason})
+
+            #Display the current queue of patients
+            print("\nCurrent Queue:")
+            for number, patient in enumerate(q.to_list(), start=1):
+                print(f"   [{number}] {patient['name']}")
         
     elif choice == '2':
          #Error handling for empty queue
@@ -197,7 +247,7 @@ while True:
         if Found:
             print("\n=== Patient Found ===")
             print(f"Name : {Found['name']}")
-            print(f"Age : {Found['age']}")
+            print(f"Age  : {Found['age']}")
             print(f"Reason : {Found['reason']}")
         
         else:
