@@ -140,7 +140,6 @@ while True:
         #Invalid choice handling
         print("\nInvalid choice. Please try again.")
 
-"""To define a single node in BST"""
 class BSTNode:
     def __init__(self, patient):
         self.patient = patient
@@ -150,5 +149,39 @@ class BSTNode:
 class BST:
     def __init__(self):
         self.root = None
+
+def insert(self, patient):
+    if self.root is None:
+        self.root = BSTNode(patient)
+    return
+
+curP = self.root
+while True:
+    if patient['name'].lower() < curP.patient['name'].lower():
+        if curP.left is None:
+            curP.left = BSTNode(patient)
+            break
+            curP = curP.left
+        else:
+         if curP.right is None:
+             curP.right = BSTNode(patient)
+             break 
+        curP = curP.right
+
+    def patient_search(self, p_name_search):
+        target = p_name_search.lower()
+        curP = self.root
+
+        while curP is not None:
+            if curP.patient['name'].lower() == target:
+                return curP.patient
+
+            if target < curP.patient['name'].lower():
+                curP = curP.left
+            else:
+                curP = curP.right
+
+        return None
+
 
 """Kindly continue for the next members in  BRANCH: VERSION-ONE"""
