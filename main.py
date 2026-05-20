@@ -222,6 +222,58 @@ class BST:
         header("ALL CONSULTED PATIENTS")
         self.inorder(self.root)
 
+    def delete_patient(self, p_name):
+        target = p_name.lower()
+        parent = None
+        curP = self.root
+        is_left_child = False
+
+        while curP is not None:
+            cur_name = curP.patient.name.lower()  
+            if cur_name == target:
+                break
+            parent = curP
+            if target < cur_name:
+                curP = curP.left
+                is_left_child = True
+            else:
+                curP = curP.right
+                is_left_child = False
+
+        if curP is None:
+            return None
+
+        deleted_patient = curP.patient
+
+        if curP.left is not None and curP.right is not None:
+            successor_parent = curP
+            successor = curP.right
+            while successor.left is not None:
+                successor_parent = successor
+                successor = successor.left
+            curP.patient = successor.patient
+            if successor_parent == curP:
+                successor_parent.right = successor.right
+            else:
+                successor_parent.left = successor.right
+            return deleted_patient
+
+        if curP.left is None and curP.right is None:
+            replacement = None
+        elif curP.left is None:
+            replacement = curP.right
+        else:
+            replacement = curP.left
+
+        if parent is None:
+            self.root = replacement
+        elif is_left_child:
+            parent.left = replacement
+        else:
+            parent.right = replacement
+
+        return deleted_patient
+
 # =========================
 # HELP MENU
 # =========================
@@ -399,23 +451,21 @@ while True:
         header("DELETE RECORD")
 
         name = input("Enter patient name to delete: ").strip()
-
         confirm = input("Delete this record? (Y/N): ").upper()
 
         if confirm == 'Y':
 
-            deleted = records.delete_record(name)
+            deleted = records.delete_record(name)  
+            search_tree.delete_patient(name)
 
             if deleted:
-                print("\nRecord deleted successfully.")
+                print(f"\n=== Record Deleted Successfully ===")
                 deleted.display()
-
             else:
-                print("Record not found.")
+                print("\nPatient not found.")
 
         else:
             print("Deletion cancelled.")
-
     # =====================
     # DISPLAY ALL
     # =====================
