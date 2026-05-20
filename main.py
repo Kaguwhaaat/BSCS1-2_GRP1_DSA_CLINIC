@@ -1,6 +1,7 @@
 from getpass import getpass
 from collections import deque
-from datetime import datetime
+from datetime import datetime, timezone
+from zoneinfo import ZoneInfo
 import time
 
 # =========================
@@ -21,8 +22,10 @@ def loading():
     print()
 
 def current_time():
-    now = datetime.now()
-    return now.strftime("%B %d, %Y | %I:%M %p")
+    gen_time = datetime.now(timezone.utc)
+
+    phil_time = gen_time.astimezone(ZoneInfo("Asia/Manila"))
+    return phil_time.strftime("%B %d, %Y | %I:%M %p")
 
 # =========================
 # PATIENT CLASS
@@ -233,8 +236,8 @@ def help_menu():
 [2] Serve Patient
     - Serves the first patient in line.
 
-[3] View Records
-    - Displays all consulted patients.
+[3] View History
+    - Displays all recently consulted patients. (chronologically)
 
 [4] Search Patient
     - Searches patient by name.
@@ -242,8 +245,8 @@ def help_menu():
 [5] Delete Record
     - Deletes consultation record.
 
-[6] Display All
-    - Displays all patients alphabetically.
+[6] Display Record
+    - Displays all consulted patients alphabetically.
 
 [7] Exit
     - Closes the system safely.
@@ -299,10 +302,10 @@ while True:
 
     print("\n[1] Register Patient")
     print("[2] Serve Patient")
-    print("[3] View Records")
+    print("[3] View History")
     print("[4] Search Patient")
     print("[5] Delete Record")
-    print("[6] Display All")
+    print("[6] Display Record")
     print("[7] Exit")
     print("[8] Help")
 
