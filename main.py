@@ -1,31 +1,102 @@
-from getpass import getpass
 from collections import deque
 from datetime import datetime, timezone
 from zoneinfo import ZoneInfo
+import os
+import sys
 import time
 
 # =========================
-# DISPLAY FUNCTIONS
+# UX HELPERS  (ported from To-Do app)
 # =========================
-def header(title):
-    print("\n" + "=" * 45)
-    print(title.center(45))
-    print("=" * 45)
+
+def clear():
+    os.system("cls" if os.name == "nt" else "clear")
+
+
+def thick_divider(width=50):
+    print("═" * width)
+
+
+def thin_divider(width=50):
+    print("─" * width)
+
+
+def get_char():
+    """Read a single keypress without requiring Enter ."""
+    if os.name == "nt":
+        import msvcrt
+        return msvcrt.getwch()
+    else:
+        import tty
+        import termios
+        fd = sys.stdin.fileno()
+        old = termios.tcgetattr(fd)
+        try:
+            tty.setraw(fd)
+            ch = sys.stdin.read(1)
+        finally:
+            termios.tcsetattr(fd, termios.TCSADRAIN, old)
+        return ch
+
+
+def input_password(prompt="  Password : "):
+    """Read password character by character, echoing '*' for each character.
+    Supports backspace."""
+    print(prompt, end="", flush=True)
+    password = ""
+    while True:
+        ch = get_char()
+        # Enter pressed — done
+        if ch in ("\r", "\n"):
+            print()
+            break
+        # Backspace (Windows: \x08, Unix: \x7f)
+        elif ch in ("\x08", "\x7f"):
+            if password:
+                password = password[:-1]
+                # Move cursor back, erase character, move back again
+                print("\b \b", end="", flush=True)
+        # Ctrl+C
+        elif ch == "\x03":
+            print()
+            raise KeyboardInterrupt
+        else:
+            password += ch
+            print("*", end="", flush=True)
+    return password
+
+
+def pause(msg="  Press [Enter] or [Space] to continue."):
+    print(f"\n{msg}")
+    while True:
+        ch = get_char()
+        if ch in ("\r", "\n", " ", ""):
+            break
+
+
+def print_header(title=None):
+    clear()
+    thick_divider()
+    print("  CLINIC ADMINISTRATOR SYSTEM".center(50))
+    thick_divider()
+    if title:
+        print(f"  {title.upper()}")
+        thin_divider()
+
 
 def loading():
-    print("\nLoading", end="")
-
-    for i in range(3):
+    print("\n  Loading", end="", flush=True)
+    for _ in range(3):
         time.sleep(0.3)
-        print(".", end="")
-
+        print(".", end="", flush=True)
     print()
+
 
 def current_time():
     gen_time = datetime.now(timezone.utc)
-
     phil_time = gen_time.astimezone(ZoneInfo("Asia/Manila"))
     return phil_time.strftime("%B %d, %Y | %I:%M %p")
+
 
 # =========================
 # PATIENT CLASS
@@ -37,11 +108,12 @@ class Patient:
         self.reason = reason
 
     def display(self):
-        print("-" * 35)
-        print(f" Name   : {self.name}")
-        print(f" Age    : {self.age}")
-        print(f" Reason : {self.reason}")
-        print("-" * 35)
+        thin_divider(35)
+        print(f"  Name   : {self.name}")
+        print(f"  Age    : {self.age}")
+        print(f"  Reason : {self.reason}")
+        thin_divider(35)
+
 
 # =========================
 # QUEUE CLASS
@@ -52,13 +124,12 @@ class Queue:
 
     def enqueue(self, patient):
         self.patients.append(patient)
-        print(f"\n{patient.name} added to queue.")
+        print(f"\n  ✔ {patient.name} added to queue.")
 
     def dequeue(self):
         if self.is_empty():
-            print("\nNo patients in queue.")
+            print("\n  No patients in queue.")
             return None
-
         return self.patients.popleft()
 
     def is_empty(self):
@@ -68,14 +139,16 @@ class Queue:
         return len(self.patients)
 
     def display_queue(self):
+        thick_divider()
+        print("  CURRENT QUEUE")
+        thin_divider()
         if self.is_empty():
-            print("\nQueue is empty.")
-            return
+            print("  (empty)")
+        else:
+            for i, patient in enumerate(self.patients, start=1):
+                print(f"  [{i}] {patient.name}")
+        thick_divider()
 
-        header("CURRENT QUEUE")
-
-        for i, patient in enumerate(self.patients, start=1):
-            print(f"[{i}] {patient.name}")
 
 # =========================
 # LINKED LIST
@@ -85,64 +158,55 @@ class Node:
         self.patient = patient
         self.next = None
 
+
 class LinkedList:
     def __init__(self):
         self.head = None
 
     def add_record(self, patient):
         new_node = Node(patient)
-
         if not self.head:
             self.head = new_node
             return
-
         current = self.head
-
         while current.next:
             current = current.next
-
         current.next = new_node
 
     def display_records(self):
+        thick_divider()
+        print("  CONSULTED PATIENTS  (Chronological)")
+        thin_divider()
         if not self.head:
-            print("\nNo consultation records.")
+            print("  No consultation records.")
+            thick_divider()
             return
-
-        header("CONSULTED PATIENTS")
-
         current = self.head
         count = 1
-
         while current:
-            print(f"\nPatient #{count}")
+            print(f"\n  Patient #{count}")
             current.patient.display()
             current = current.next
             count += 1
+        thick_divider()
 
     def delete_record(self, name):
-
         if not self.head:
             return None
-
         target = name.lower()
-
         if self.head.patient.name.lower() == target:
             deleted = self.head.patient
             self.head = self.head.next
             return deleted
-
         current = self.head
-
         while current.next:
-
             if current.next.patient.name.lower() == target:
                 deleted = current.next.patient
                 current.next = current.next.next
                 return deleted
-
             current = current.next
-
         return None
+
 
 # =========================
 # BST
@@ -153,159 +217,80 @@ class BSTNode:
         self.left = None
         self.right = None
 
+
 class BST:
     def __init__(self):
         self.root = None
 
     def insert(self, patient):
-
         new_node = BSTNode(patient)
-
         if not self.root:
             self.root = new_node
             return
-
         current = self.root
-
         while True:
-
             if patient.name.lower() < current.patient.name.lower():
-
                 if current.left is None:
                     current.left = new_node
                     return
-
                 current = current.left
-
             else:
-
                 if current.right is None:
                     current.right = new_node
                     return
-
                 current = current.right
 
     def search(self, name):
-
         current = self.root
         target = name.lower()
-
         while current:
-
             current_name = current.patient.name.lower()
-
-            # Partial search
             if target in current_name:
                 return current.patient
-
             elif target < current_name:
                 current = current.left
-
             else:
                 current = current.right
-
         return None
 
-    def inorder(self, node):
-
+    def _inorder(self, node):
         if node:
-            self.inorder(node.left)
+            self._inorder(node.left)
             node.patient.display()
-            self.inorder(node.right)
+            self._inorder(node.right)
 
     def display_all(self):
-
+        thick_divider()
+        print("  ALL CONSULTED PATIENTS  (Alphabetical)")
+        thin_divider()
         if not self.root:
-            print("\nNo records found.")
+            print("  No records found.")
+            thick_divider()
             return
+        self._inorder(self.root)
+        thick_divider()
 
-        header("ALL CONSULTED PATIENTS")
-        self.inorder(self.root)
-
-    def delete_patient(self, p_name):
-        target = p_name.lower()
-        parent = None
-        curP = self.root
-        is_left_child = False
-
-        while curP is not None:
-            cur_name = curP.patient.name.lower()  
-            if cur_name == target:
-                break
-            parent = curP
-            if target < cur_name:
-                curP = curP.left
-                is_left_child = True
-            else:
-                curP = curP.right
-                is_left_child = False
-
-        if curP is None:
-            return None
-
-        deleted_patient = curP.patient
-
-        if curP.left is not None and curP.right is not None:
-            successor_parent = curP
-            successor = curP.right
-            while successor.left is not None:
-                successor_parent = successor
-                successor = successor.left
-            curP.patient = successor.patient
-            if successor_parent == curP:
-                successor_parent.right = successor.right
-            else:
-                successor_parent.left = successor.right
-            return deleted_patient
-
-        if curP.left is None and curP.right is None:
-            replacement = None
-        elif curP.left is None:
-            replacement = curP.right
-        else:
-            replacement = curP.left
-
-        if parent is None:
-            self.root = replacement
-        elif is_left_child:
-            parent.left = replacement
-        else:
-            parent.right = replacement
-
-        return deleted_patient
 
 # =========================
 # HELP MENU
 # =========================
 def help_menu():
-
-    header("HELP MENU")
-
-    print("""
-[1] Register Patient
-    - Adds patient to waiting queue.
-
-[2] Serve Patient
-    - Serves the first patient in line.
-
-[3] View History
-    - Displays all recently consulted patients. (chronologically)
-
-[4] Search Patient
-    - Searches patient by name.
-
-[5] Delete Record
-    - Deletes consultation record.
-
-[6] Display Record
-    - Displays all consulted patients alphabetically.
-
-[7] Exit
-    - Closes the system safely.
-
-[8] Help
-    - Displays this help menu.
-    """)
+    print_header("Help Menu")
+    items = [
+        ("1", "Register Patient",  "Adds patient to the waiting queue."),
+        ("2", "Serve Patient",     "Serves the first patient in line."),
+        ("3", "View History",      "Displays all recently consulted patients (chronological)."),
+        ("4", "Search Patient",    "Searches patient by name."),
+        ("5", "Delete Record",     "Deletes a consultation record."),
+        ("6", "Display Record",    "Displays all consulted patients alphabetically."),
+        ("7", "Exit",              "Closes the system safely."),
+        ("8", "Help",              "Displays this help menu."),
+    ]
+    for num, name, desc in items:
+        print(f"  [{num}] {name}")
+        print(f"       {desc}")
+        print()
+    pause("  Press [Enter] or [Space] to go back.")
 
 
 # =========================
@@ -314,183 +299,204 @@ def help_menu():
 USERNAME = "Admin"
 PASSWORD = "123Clinic"
 
-attempts = 3
 
-while attempts > 0:
+def login():
+    attempts = 3
+    while attempts > 0:
+        clear()
+        thick_divider()
+        print("  CLINIC ADMINISTRATOR SYSTEM".center(50))
+        thick_divider()
+        print("  LOGIN")
+        thin_divider()
+        username = input("  Username : ").strip()
+        password = input_password("  Password : ").strip()
 
-    header("LOGIN SYSTEM")
+        if username == USERNAME and password == PASSWORD:
+            thick_divider()
+            print("  ✔ Login Successful!")
+            loading()
+            return True
 
-    username = input("Username: ").strip()
-    password = getpass("Password: ").strip()
+        attempts -= 1
+        thick_divider()
+        if attempts > 0:
+            print(f"  ✘ Invalid credentials. Attempts left: {attempts}")
+        else:
+            print("  ✘ Too many failed attempts. System locked.")
+        pause("  Press [Enter] or [Space] to try again." if attempts > 0 else "  Press [Enter] or [Space] to exit.")
 
-    if username == USERNAME and password == PASSWORD:
-        print("\nLogin Successful!")
+    return False
+
+
+# =========================
+# MAIN MENU DISPLAY
+# =========================
+def print_main_menu(queue):
+    print_header()
+    thick_divider()
+    print(f"  Date & Time      : {current_time()}")
+    print(f"  Patients Waiting : {queue.size()}")
+    thick_divider()
+    thin_divider()
+    print("  [1] Register Patient")
+    print("  [2] Serve Patient")
+    print("  [3] View History")
+    print("  [4] Search Patient")
+    print("  [5] Delete Record")
+    print("  [6] Display Record")
+    print("  [7] Exit")
+    print("  [8] Help")
+    thin_divider()
+
+
+def is_valid_name(name):
+    """Allow only letters, spaces, and periods (for names like 'Jr.' or 'St.')"""
+    return all(c.isalpha() or c in (" ", ".") for c in name)
+
+
+# =========================
+# MENU HANDLERS
+# =========================
+def handle_register(queue):
+    print_header("Patient Registration")
+    name = input("  Patient Name    : ").strip()
+    if not name:
+        print("  Name cannot be empty.")
+        pause()
+        return
+    if not is_valid_name(name):
+        print("  Invalid name. Only letters, spaces, and '.' are allowed.")
+        pause()
+        return
+
+    age_input = input("  Patient Age     : ").strip()
+    if not age_input.isdigit():
+        print("  Invalid age.")
+        pause()
+        return
+    age = int(age_input)
+    if age < 1 or age > 120:
+        print("  Age must be between 1 and 120.")
+        pause()
+        return
+
+    reason = input("  Reason for Visit: ").strip()
+    if not reason:
+        print("  Reason cannot be empty.")
+        pause()
+        return
+
+    patient = Patient(name, age, reason)
+    queue.enqueue(patient)
+    queue.display_queue()
+    pause()
+
+
+def handle_serve(queue, records, search_tree):
+    patient = queue.dequeue()
+    if patient:
         loading()
-        break
+        print_header("Serving Patient")
+        patient.display()
+        records.add_record(patient)
+        search_tree.insert(patient)
+        print("\n  ✔ Patient served successfully.")
+        pause()
 
-    attempts -= 1
-    print(f"\nInvalid login. Attempts left: {attempts}")
 
-if attempts == 0:
-    print("\nSystem Locked.")
-    exit()
+def handle_view_history(records):
+    print_header("View History")
+    records.display_records()
+    pause()
 
-# =========================
-# SYSTEM OBJECTS
-# =========================
-queue = Queue()
-records = LinkedList()
-search_tree = BST()
+
+def handle_search(search_tree):
+    print_header("Search Patient")
+    name = input("  Enter patient name: ").strip()
+    found = search_tree.search(name)
+    thin_divider()
+    if found:
+        print("  PATIENT FOUND")
+        found.display()
+    else:
+        print("  Patient not found.")
+    pause()
+
+
+def handle_delete(records):
+    print_header("Delete Record")
+    name = input("  Enter patient name to delete: ").strip()
+    thin_divider()
+    print(f"  This will permanently delete the record for \"{name.title()}\".")
+    confirm = input('  Type "YES" to confirm: ').strip()
+    if confirm == "YES":
+        deleted = records.delete_record(name)
+        if deleted:
+            print("\n  ✔ Record deleted successfully.")
+            deleted.display()
+        else:
+            print("  Record not found.")
+    else:
+        print("  Deletion cancelled. Nothing was changed.")
+    pause()
+
+
+def handle_display_all(search_tree):
+    print_header("Display All Records")
+    search_tree.display_all()
+    pause()
+
+
+def handle_exit():
+    print_header()
+    thick_divider()
+    confirm = input("  Exit system? (Y/N): ").strip().upper()
+    if confirm == "Y":
+        thick_divider()
+        print("\n  Thank you for using the Clinic System!")
+        print("  Stay safe and healthy. 🏥\n")
+        thick_divider()
+        return True
+    return False
+
 
 # =========================
 # MAIN PROGRAM
 # =========================
-while True:
+def main():
+    if not login():
+        exit()
 
-    header("CLINIC ADMINISTRATOR SYSTEM")
+    queue       = Queue()
+    records     = LinkedList()
+    search_tree = BST()
 
-    print(f"Date & Time      : {current_time()}")
-    print(f"Patients Waiting : {queue.size()}")
+    while True:
+        print_main_menu(queue)
+        choice = input("  Enter choice: ").strip()
 
-    print("\n[1] Register Patient")
-    print("[2] Serve Patient")
-    print("[3] View History")
-    print("[4] Search Patient")
-    print("[5] Delete Record")
-    print("[6] Display Record")
-    print("[7] Exit")
-    print("[8] Help")
-
-    choice = input("\nEnter choice: ").strip()
-
-    # =====================
-    # REGISTER
-    # =====================
-    if choice == '1':
-
-        header("PATIENT REGISTRATION")
-
-        name = input("Patient Name: ").strip()
-
-        if not name:
-            print("Name cannot be empty.")
-            continue
-
-        age_input = input("Patient Age: ").strip()
-
-        if not age_input.isdigit():
-            print("Invalid age.")
-            continue
-
-        age = int(age_input)
-
-        if age < 1 or age > 120:
-            print("Age must be between 1-120.")
-            continue
-
-        reason = input("Reason for Visit: ").strip()
-
-        if not reason:
-            print("Reason cannot be empty.")
-            continue
-
-        patient = Patient(name, age, reason)
-
-        queue.enqueue(patient)
-        queue.display_queue()
-
-    # =====================
-    # SERVE
-    # =====================
-    elif choice == '2':
-
-        patient = queue.dequeue()
-
-        if patient:
-
-            loading()
-
-            header("SERVING PATIENT")
-
-            patient.display()
-
-            records.add_record(patient)
-            search_tree.insert(patient)
-
-            print("\nPatient served successfully.")
-
-    # =====================
-    # VIEW RECORDS
-    # =====================
-    elif choice == '3':
-        records.display_records()
-
-    # =====================
-    # SEARCH
-    # =====================
-    elif choice == '4':
-
-        header("SEARCH PATIENT")
-
-        name = input("Enter patient name: ").strip()
-
-        found = search_tree.search(name)
-
-        if found:
-            print("\n=== PATIENT FOUND ===")
-            found.display()
-
+        if choice == "1":
+            handle_register(queue)
+        elif choice == "2":
+            handle_serve(queue, records, search_tree)
+        elif choice == "3":
+            handle_view_history(records)
+        elif choice == "4":
+            handle_search(search_tree)
+        elif choice == "5":
+            handle_delete(records)
+        elif choice == "6":
+            handle_display_all(search_tree)
+        elif choice == "7":
+            if handle_exit():
+                break
+        elif choice == "8":
+            help_menu()
         else:
-            print("Patient not found.")
-
-    # =====================
-    # DELETE
-    # =====================
-    elif choice == '5':
-
-        header("DELETE RECORD")
-
-        name = input("Enter patient name to delete: ").strip()
-        confirm = input("Delete this record? (Y/N): ").upper()
-
-        if confirm == 'Y':
-
-            deleted = records.delete_record(name)  
-            search_tree.delete_patient(name)
-
-            if deleted:
-                print(f"\n=== Record Deleted Successfully ===")
-                deleted.display()
-            else:
-                print("\nPatient not found.")
-
-        else:
-            print("Deletion cancelled.")
-    # =====================
-    # DISPLAY ALL
-    # =====================
-    elif choice == '6':
-        search_tree.display_all()
-
-    # =====================
-    # EXIT
-    # =====================
-    elif choice == '7':
-
-        confirm = input("Exit system? (Y/N): ").upper()
-
-        if confirm == 'Y':
-            print("\nThank you for using the system!")
-            break
-
-    # =====================
-    # HELP MENU
-    # =====================
-    elif choice == '8':
-        help_menu()
-
-    else:
-        print("\nInvalid choice.")
+            thick_divider()
+            print("  Invalid choice. Please try again.")
+            pause()
 
 
 """Love You Sir :D - Group 1 | BSCS 1 - 2"""
