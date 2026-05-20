@@ -1,27 +1,82 @@
 from getpass import getpass
+from collections import deque
+from datetime import datetime
+import time
 
+# =========================
+# DISPLAY FUNCTIONS
+# =========================
+def header(title):
+    print("\n" + "=" * 45)
+    print(title.center(45))
+    print("=" * 45)
+
+def loading():
+    print("\nLoading", end="")
+
+    for i in range(3):
+        time.sleep(0.3)
+        print(".", end="")
+
+    print()
+
+def current_time():
+    now = datetime.now()
+    return now.strftime("%B %d, %Y | %I:%M %p")
+
+# =========================
+# PATIENT CLASS
+# =========================
+class Patient:
+    def __init__(self, name, age, reason):
+        self.name = name.title()
+        self.age = age
+        self.reason = reason
+
+    def display(self):
+        print("-" * 35)
+        print(f" Name   : {self.name}")
+        print(f" Age    : {self.age}")
+        print(f" Reason : {self.reason}")
+        print("-" * 35)
+
+# =========================
+# QUEUE CLASS
+# =========================
 class Queue:
     def __init__(self):
-        self.patients =[]
+        self.patients = deque()
+
     def enqueue(self, patient):
         self.patients.append(patient)
-        print(f"{patient['name']} is now currently waiting...")
+        print(f"\n{patient.name} added to queue.")
+
     def dequeue(self):
         if self.is_empty():
-            print("=== No Patients in Line ===")
+            print("\nNo patients in queue.")
             return None
-        patient = self.patients.pop(0)
-        print(f"   Patient: {patient['name']}")
-        print(f"   Age   : {patient['age']}")
-        print(f"   Reason: {patient['reason']}")
-        return patient
+
+        return self.patients.popleft()
+
     def is_empty(self):
         return len(self.patients) == 0
+
     def size(self):
         return len(self.patients)
-    def to_list(self):
-        return self.patients.copy()
-    
+
+    def display_queue(self):
+        if self.is_empty():
+            print("\nQueue is empty.")
+            return
+
+        header("CURRENT QUEUE")
+
+        for i, patient in enumerate(self.patients, start=1):
+            print(f"[{i}] {patient.name}")
+
+# =========================
+# LINKED LIST
+# =========================
 class Node:
     def __init__(self, patient):
         self.patient = patient
@@ -31,58 +86,64 @@ class LinkedList:
     def __init__(self):
         self.head = None
 
-    def new_record(self, patient):
-        newNode = Node(patient)
+    def add_record(self, patient):
+        new_node = Node(patient)
+
         if not self.head:
-            self.head = newNode
+            self.head = new_node
             return
+
         current = self.head
+
         while current.next:
             current = current.next
-        current.next = newNode
 
-    def delete_record(self, p_name):
+        current.next = new_node
 
-        target = p_name.lower()
- 
-        #Empty list
+    def display_records(self):
         if not self.head:
-            print("\n=== No Consulted Records to Delete ===")
+            print("\nNo consultation records.")
+            return
+
+        header("CONSULTED PATIENTS")
+
+        current = self.head
+        count = 1
+
+        while current:
+            print(f"\nPatient #{count}")
+            current.patient.display()
+            current = current.next
+            count += 1
+
+    def delete_record(self, name):
+
+        if not self.head:
             return None
- 
-        #Head node is the match
-        if self.head.patient['name'].lower() == target:
+
+        target = name.lower()
+
+        if self.head.patient.name.lower() == target:
             deleted = self.head.patient
             self.head = self.head.next
             return deleted
- 
-        #Search through the rest of the list
+
         current = self.head
+
         while current.next:
-            if current.next.patient['name'].lower() == target:
+
+            if current.next.patient.name.lower() == target:
                 deleted = current.next.patient
-                current.next = current.next.next  
+                current.next = current.next.next
                 return deleted
+
             current = current.next
- 
+
         return None
 
-    def display(self):
-        if not self.head:
-            print("==== No patients consulted yet ===")
-            return
-        current = self.head
-        print("=== Consulted Patients ===")
-        patient_number = 1
-        while current:
-            print(f"[{patient_number}]")
-            print(f"Patient Name: {current.patient['name']}")
-            print(f"Patient Age: {current.patient['age']}")
-            print(f"Patient Reason: {current.patient['reason']}")
-            print("==========================")
-            current = current.next
-            patient_number += 1
-
+# =========================
+# BST
+# =========================
 class BSTNode:
     def __init__(self, patient):
         self.patient = patient
@@ -92,304 +153,291 @@ class BSTNode:
 class BST:
     def __init__(self):
         self.root = None
-    
-    def is_empty(self):
-        return self.root is None
-    
+
     def insert(self, patient):
-        if self.root is None:
-            self.root = BSTNode(patient)
-            return                         
 
-        curP = self.root
+        new_node = BSTNode(patient)
+
+        if not self.root:
+            self.root = new_node
+            return
+
+        current = self.root
+
         while True:
-            if patient['name'].lower() < curP.patient['name'].lower():
-                if curP.left is None:
-                    curP.left = BSTNode(patient)
-                    break
-                curP = curP.left
-            else:
-                if curP.right is None:
-                    curP.right = BSTNode(patient)
-                    break
-                curP = curP.right          
 
-    def patient_search(self, p_name_search):  
-        target = p_name_search.lower()
-        curP = self.root
+            if patient.name.lower() < current.patient.name.lower():
 
-        while curP is not None:
-            if curP.patient['name'].lower() == target:
-                return curP.patient
-            if target < curP.patient['name'].lower():
-                curP = curP.left
+                if current.left is None:
+                    current.left = new_node
+                    return
+
+                current = current.left
+
             else:
-                curP = curP.right
+
+                if current.right is None:
+                    current.right = new_node
+                    return
+
+                current = current.right
+
+    def search(self, name):
+
+        current = self.root
+        target = name.lower()
+
+        while current:
+
+            current_name = current.patient.name.lower()
+
+            # Partial search
+            if target in current_name:
+                return current.patient
+
+            elif target < current_name:
+                current = current.left
+
+            else:
+                current = current.right
 
         return None
-    
-    def delete_patient(self, p_name):
-      
-        target = p_name.lower()
-        parent = None
-        curP = self.root
-        is_left_child = False
- 
-        #locate node and parent
-        while curP is not None:
-            cur_name = curP.patient['name'].lower()
-            if cur_name == target:
-                break
-            parent = curP
-            if target < cur_name:
-                curP = curP.left
-                is_left_child = True
-            else:
-                curP = curP.right
-                is_left_child = False
- 
-        if curP is None:
-            return None  
- 
-        deleted_patient = curP.patient
- 
-        if curP.left is not None and curP.right is not None:
-            # finding inorder succesor
-            successor_parent = curP
-            successor = curP.right
-            while successor.left is not None:
-                successor_parent = successor
-                successor = successor.left
- 
-            # copy the data into current node
-            curP.patient = successor.patient
- 
-            # delete successor node
-            if successor_parent == curP:
-                successor_parent.right = successor.right
-            else:
-                successor_parent.left = successor.right
- 
-            return deleted_patient
- 
 
-        if curP.left is None and curP.right is None:
-            replacement = None             
-        elif curP.left is None:
-            replacement = curP.right     
-        else:
-            replacement = curP.left         
- 
-        if parent is None:
-            # delete root
-            self.root = replacement
-        elif is_left_child:
-            parent.left = replacement
-        else:
-            parent.right = replacement
- 
-        return deleted_patient
+    def inorder(self, node):
 
-    def _inorder(self, node, result):
-
-        if node is None:
-            return
-        self._inorder(node.left, result)
-        result.append(node.patient)
-        self._inorder(node.right, result)
+        if node:
+            self.inorder(node.left)
+            node.patient.display()
+            self.inorder(node.right)
 
     def display_all(self):
 
-        if self.root is None:
-            print("\n=== No Records in BST ===")
+        if not self.root:
+            print("\nNo records found.")
             return
-        #Collects patient record in sorted order via inorder traversal
-        records = []
-        self._inorder(self.root,records)
-        #Prints patients alphabetically arranged
-        print("\n=== All Consulted Patients (A-Z) ===")
-        for i, patient in enumerate(records, start=1):
-            print(f"[{i}]")
-            print(f"   Name  : {patient['name']}")
-            print(f"   Age   : {patient['age']}")
-            print(f"   Reason: {patient['reason']}")
-            print("   " + "-" * 26)
 
-# LOGIN SYSTEM TO AUTHENTICATE
+        header("ALL CONSULTED PATIENTS")
+        self.inorder(self.root)
 
-SYSTEM_USERNAME = "Admin"
-SYSTEM_PASSWORD = "123Clinic"
+# =========================
+# HELP MENU
+# =========================
+def help_menu():
 
-print("=" * 30)
-print("CLINIC LOGIN SYSTEM")
-print("=" * 30)
+    header("HELP MENU")
+
+    print("""
+[1] Register Patient
+    - Adds patient to waiting queue.
+
+[2] Serve Patient
+    - Serves the first patient in line.
+
+[3] View Records
+    - Displays all consulted patients.
+
+[4] Search Patient
+    - Searches patient by name.
+
+[5] Delete Record
+    - Deletes consultation record.
+
+[6] Display All
+    - Displays all patients alphabetically.
+
+[7] Exit
+    - Closes the system safely.
+
+[8] Help
+    - Displays this help menu.
+    """)
+
+
+# =========================
+# LOGIN
+# =========================
+USERNAME = "Admin"
+PASSWORD = "123Clinic"
 
 attempts = 3
 
 while attempts > 0:
-    username = input("Enter Username: ").strip()
-    password = getpass("Enter Password: ").strip() 
-    #ADDED GETPASS FOR PASSWORD INVISIBILITY
 
-    if username == SYSTEM_USERNAME and password == SYSTEM_PASSWORD:
+    header("LOGIN SYSTEM")
+
+    username = input("Username: ").strip()
+    password = getpass("Password: ").strip()
+
+    if username == USERNAME and password == PASSWORD:
         print("\nLogin Successful!")
+        loading()
         break
-    else:
-        attempts -= 1
-        print("\nInvalid Username or Password.")
-        print("=" * 30)
-        print(f"Attempts Remaining: {attempts}")
+
+    attempts -= 1
+    print(f"\nInvalid login. Attempts left: {attempts}")
 
 if attempts == 0:
-    print("\nToo many failed attempts.")
-    print("System Locked.")
+    print("\nSystem Locked.")
     exit()
 
-# START OF THE MAIN SYSTEM
+# =========================
+# SYSTEM OBJECTS
+# =========================
+queue = Queue()
+records = LinkedList()
+search_tree = BST()
 
-q = Queue()
-consulted = LinkedList()
-search = BST()
-
-print("=" * 30 + "\nCLINIC ADMINISTRATOR SYSTEM\n" + "=" * 30)
-
-
-def format_name(name):
-         return name.title()
-
+# =========================
+# MAIN PROGRAM
+# =========================
 while True:
-    #Clinic Administrator System Menu
-    print("\n[1] Patient Registration")
-    print("[2] Serve Patients")
-    print("[3] View Consultation Record")
+
+    header("CLINIC ADMINISTRATOR SYSTEM")
+
+    print(f"Date & Time      : {current_time()}")
+    print(f"Patients Waiting : {queue.size()}")
+
+    print("\n[1] Register Patient")
+    print("[2] Serve Patient")
+    print("[3] View Records")
     print("[4] Search Patient")
-    print("[5] Delete Patient")
-    print("[6] Display All Records")
+    print("[5] Delete Record")
+    print("[6] Display All")
     print("[7] Exit")
-    choice = input("Enter Function: ").strip()
+    print("[8] Help")
 
+    choice = input("\nEnter choice: ").strip()
+
+    # =====================
+    # REGISTER
+    # =====================
     if choice == '1':
-        #Patient Registration
-        print("\n=== Patient Registration ===")
-        name = input("Enter Patient Name: ").strip()
-        name = format_name(name)
 
-        wrongInput = True
+        header("PATIENT REGISTRATION")
 
-        while wrongInput:
-            age = input("Enter Patient Age: ").strip()
-        
-        #Error handling for empty name and non-numeric age
-            if  not name:
-                print("\n === Name cannot be empty. Please try again. === \n")
-                continue
+        name = input("Patient Name: ").strip()
 
-        #Error handling for unrealistic age negative and over 120
+        if not name:
+            print("Name cannot be empty.")
+            continue
 
-            if not age.isdigit():
-                print("\n === Invalid age. Please enter a number. === \n")
-                continue
+        age_input = input("Patient Age: ").strip()
 
-            age = int(age)
+        if not age_input.isdigit():
+            print("Invalid age.")
+            continue
 
-            if age < 1 or age > 120:
-                print("\n === Invalid Age. Try Again (1-120). === \n")
-                continue
-                
-            reason = input("Enter Reason for Visit: ").strip()
+        age = int(age_input)
 
-            #Enqueue the patient to the queue
-            q.enqueue({'name': name, 'age': age, 'reason': reason})
+        if age < 1 or age > 120:
+            print("Age must be between 1-120.")
+            continue
 
-            #Display the current queue of patients
-            print("\nCurrent Queue:")
-            for number, patient in enumerate(q.to_list(), start=1):
-                print(f"   [{number}] {patient['name']}")
+        reason = input("Reason for Visit: ").strip()
 
-            wrongInput = False
-        
+        if not reason:
+            print("Reason cannot be empty.")
+            continue
+
+        patient = Patient(name, age, reason)
+
+        queue.enqueue(patient)
+        queue.display_queue()
+
+    # =====================
+    # SERVE
+    # =====================
     elif choice == '2':
-         #Error handling for empty queue
-         if q.is_empty():
-            print("\n=== No Patients to Serve ===")
-            continue
-         else:
-            #Serve Patients
-            print("\n=== Serving Patients ===")
-            patient = q.dequeue()
-            consulted.new_record(patient)
-            #To save patient into the BST
-            search.insert(patient)
-            print(f"   Status: Served")
-            print(f"\n   Remaining Patients: {q.size()}")
 
-        
+        patient = queue.dequeue()
+
+        if patient:
+
+            loading()
+
+            header("SERVING PATIENT")
+
+            patient.display()
+
+            records.add_record(patient)
+            search_tree.insert(patient)
+
+            print("\nPatient served successfully.")
+
+    # =====================
+    # VIEW RECORDS
+    # =====================
     elif choice == '3':
-        consulted.display()
-    
+        records.display_records()
+
+    # =====================
+    # SEARCH
+    # =====================
     elif choice == '4':
-        if search.is_empty():
-            print("\n=== No Patients to Search ===")
-            continue
 
-        print("\n=== Search Patient ===")
-        Sname = input("Enter Patient Full Name: ").strip()
+        header("SEARCH PATIENT")
 
-        Found = search.patient_search(Sname)
+        name = input("Enter patient name: ").strip()
 
-        if Found:
-            print("\n=== Patient Found ===")
-            print(f"Name : {Found['name']}")
-            print(f"Age  : {Found['age']}")
-            print(f"Reason : {Found['reason']}")
-        
+        found = search_tree.search(name)
+
+        if found:
+            print("\n=== PATIENT FOUND ===")
+            found.display()
+
         else:
             print("Patient not found.")
 
+    # =====================
+    # DELETE
+    # =====================
     elif choice == '5':
-        if search.is_empty():
-            print("\n=== No Records to Delete ===")
-            continue
- 
-        print("\n=== Delete Consultation Record ===")
-        delete_name = input("Enter Patient Full Name to Delete: ").strip()
- 
-        deleted_record = consulted.delete_record(delete_name)
- 
-        if deleted_record is None:
-            print(f"\nNo record found for '{delete_name}'. Nothing was deleted.")
-        else:
-            # Mirror the deletion in the BST
-            search.delete_patient(name)
-            print(f"\n=== Record Deleted Successfully ===")
-            print(f"   Name  : {deleted_record['name']}")
-            print(f"   Age   : {deleted_record['age']}")
-            print(f"   Reason: {deleted_record['reason']}")
-    
-    elif choice == '6':
-        search.display_all()
- 
-    elif choice == '7':
-        #Exit the system
-        while True:
-            #Ensure that the user wants to exit
-            confirm_exit = input("Are you sure you want to exit? (Y/N): ").strip().upper()
-            if confirm_exit == 'Y':
-                break
-            elif confirm_exit == 'N':
-                print("\nReturning to the main menu...")
-                break
+
+        header("DELETE RECORD")
+
+        name = input("Enter patient name to delete: ").strip()
+
+        confirm = input("Delete this record? (Y/N): ").upper()
+
+        if confirm == 'Y':
+
+            deleted = records.delete_record(name)
+
+            if deleted:
+                print("\nRecord deleted successfully.")
+                deleted.display()
+
             else:
-                #Invalid input handling for exit confirmation
-                print("Invalid input. Please enter 'Y' or 'N'.")
-        if confirm_exit == 'Y':
-            print("\nThank you for using the Clinic Administrator System!")
+                print("Record not found.")
+
+        else:
+            print("Deletion cancelled.")
+
+    # =====================
+    # DISPLAY ALL
+    # =====================
+    elif choice == '6':
+        search_tree.display_all()
+
+    # =====================
+    # EXIT
+    # =====================
+    elif choice == '7':
+
+        confirm = input("Exit system? (Y/N): ").upper()
+
+        if confirm == 'Y':
+            print("\nThank you for using the system!")
             break
-        elif confirm_exit == 'N':
-            continue
+
+    # =====================
+    # HELP MENU
+    # =====================
+    elif choice == '8':
+        help_menu()
+
     else:
-        #Invalid choice handling
-        print("\nInvalid choice. Please try again.")
+        print("\nInvalid choice.")
 
 
 """Kindly continue for the next members in  BRANCH: VERSION-ONE"""
