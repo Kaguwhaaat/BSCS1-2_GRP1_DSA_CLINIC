@@ -41,6 +41,32 @@ class LinkedList:
             current = current.next
         current.next = newNode
 
+    def delete_record(self, p_name):
+
+        target = p_name.lower()
+ 
+        #Empty list
+        if not self.head:
+            print("\n=== No Consulted Records to Delete ===")
+            return None
+ 
+        #Head node is the match
+        if self.head.patient['name'].lower() == target:
+            deleted = self.head.patient
+            self.head = self.head.next
+            return deleted
+ 
+        #Search through the rest of the list
+        current = self.head
+        while current.next:
+            if current.next.patient['name'].lower() == target:
+                deleted = current.next.patient
+                current.next = current.next.next  
+                return deleted
+            current = current.next
+ 
+        return None
+
     def display(self):
         if not self.head:
             print("==== No patients consulted yet ===")
@@ -102,6 +128,68 @@ class BST:
 
         return None
     
+    def delete_patient(self, p_name):
+      
+        target = p_name.lower()
+        parent = None
+        curP = self.root
+        is_left_child = False
+ 
+        #locate node and parent
+        while curP is not None:
+            cur_name = curP.patient['name'].lower()
+            if cur_name == target:
+                break
+            parent = curP
+            if target < cur_name:
+                curP = curP.left
+                is_left_child = True
+            else:
+                curP = curP.right
+                is_left_child = False
+ 
+        if curP is None:
+            return None  
+ 
+        deleted_patient = curP.patient
+ 
+        if curP.left is not None and curP.right is not None:
+            # finding inorder succesor
+            successor_parent = curP
+            successor = curP.right
+            while successor.left is not None:
+                successor_parent = successor
+                successor = successor.left
+ 
+            # copy the data into current node
+            curP.patient = successor.patient
+ 
+            # delete successor node
+            if successor_parent == curP:
+                successor_parent.right = successor.right
+            else:
+                successor_parent.left = successor.right
+ 
+            return deleted_patient
+ 
+
+        if curP.left is None and curP.right is None:
+            replacement = None             
+        elif curP.left is None:
+            replacement = curP.right     
+        else:
+            replacement = curP.left         
+ 
+        if parent is None:
+            # delete root
+            self.root = replacement
+        elif is_left_child:
+            parent.left = replacement
+        else:
+            parent.right = replacement
+ 
+        return deleted_patient
+
     def _inorder(self, node, result):
 
         if node is None:
@@ -175,8 +263,9 @@ while True:
     print("[2] Serve Patients")
     print("[3] View Consultation Record")
     print("[4] Search Patient")
-    print("[5] Display All Records")
-    print("[6] Exit")
+    print("[5] Delete Patient")
+    print("[6] Display All Records")
+    print("[7] Exit")
     choice = input("Enter Function: ").strip()
 
     if choice == '1':
@@ -185,24 +274,26 @@ while True:
         name = input("Enter Patient Name: ").strip()
         name = format_name(name)
 
-        while True:
+        wrongInput = True
+
+        while wrongInput:
             age = input("Enter Patient Age: ").strip()
         
         #Error handling for empty name and non-numeric age
             if  not name:
-                print("Name cannot be empty. Please try again.")
+                print("\n === Name cannot be empty. Please try again. === \n")
                 continue
 
         #Error handling for unrealistic age negative and over 120
 
             if not age.isdigit():
-                print("Invalid age. Please enter a number.")
+                print("\n === Invalid age. Please enter a number. === \n")
                 continue
 
             age = int(age)
 
             if age < 1 or age > 120:
-                print("Please enter a realistic age (1-120).")
+                print("\n === Invalid Age. Try Again (1-120). === \n")
                 continue
                 
             reason = input("Enter Reason for Visit: ").strip()
@@ -214,6 +305,8 @@ while True:
             print("\nCurrent Queue:")
             for number, patient in enumerate(q.to_list(), start=1):
                 print(f"   [{number}] {patient['name']}")
+
+            wrongInput = False
         
     elif choice == '2':
          #Error handling for empty queue
@@ -236,7 +329,7 @@ while True:
     
     elif choice == '4':
         if search.is_empty():
-            print("\nNo consulted patient to search.")
+            print("\n=== No Patients to Search ===")
             continue
 
         print("\n=== Search Patient ===")
@@ -254,9 +347,29 @@ while True:
             print("Patient not found.")
 
     elif choice == '5':
+        if search.is_empty():
+            print("\n=== No Records to Delete ===")
+            continue
+ 
+        print("\n=== Delete Consultation Record ===")
+        delete_name = input("Enter Patient Full Name to Delete: ").strip()
+ 
+        deleted_record = consulted.delete_record(delete_name)
+ 
+        if deleted_record is None:
+            print(f"\nNo record found for '{delete_name}'. Nothing was deleted.")
+        else:
+            # Mirror the deletion in the BST
+            search.delete_patient(name)
+            print(f"\n=== Record Deleted Successfully ===")
+            print(f"   Name  : {deleted_record['name']}")
+            print(f"   Age   : {deleted_record['age']}")
+            print(f"   Reason: {deleted_record['reason']}")
+    
+    elif choice == '6':
         search.display_all()
  
-    elif choice == '6':
+    elif choice == '7':
         #Exit the system
         while True:
             #Ensure that the user wants to exit
