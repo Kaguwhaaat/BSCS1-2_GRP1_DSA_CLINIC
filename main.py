@@ -6,7 +6,7 @@ import sys
 import time
 
 # =========================
-# UX HELPERS  (ported from To-Do app)
+# UX HELPERS  
 # =========================
 
 def clear():
