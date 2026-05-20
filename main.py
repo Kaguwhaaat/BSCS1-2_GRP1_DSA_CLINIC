@@ -493,4 +493,4 @@ while True:
         print("\nInvalid choice.")
 
 
-"""Kindly continue for the next members in  BRANCH: VERSION-ONE"""
+"""Love You Sir :D - Group 1 | BSCS 1 - 2"""
