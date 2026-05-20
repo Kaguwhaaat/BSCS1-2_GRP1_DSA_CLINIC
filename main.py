@@ -498,5 +498,7 @@ def main():
             print("  Invalid choice. Please try again.")
             pause()
 
+if __name__ == "__main__":
+    main()
 
 """Love You Sir :D - Group 1 | BSCS 1 - 2"""
