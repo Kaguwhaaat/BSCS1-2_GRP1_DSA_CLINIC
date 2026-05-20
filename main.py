@@ -505,7 +505,7 @@ def handle_exit():
     if confirm == "Y":
         thick_divider()
         print("\n  Thank you for using the Clinic System!")
-        print("  Stay safe and healthy. 🏥\n")
+        print("  Stay safe and healthy. \n")
         thick_divider()
         return True
     return False
