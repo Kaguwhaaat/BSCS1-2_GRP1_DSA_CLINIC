@@ -6,7 +6,7 @@ import sys
 import time
 
 # =========================
-# UX HELPERS  (ported from To-Do app)
+# UX HELPERS  
 # =========================
 
 def clear():
@@ -22,7 +22,7 @@ def thin_divider(width=50):
 
 
 def get_char():
-    """Read a single keypress without requiring Enter ."""
+
     if os.name == "nt":
         import msvcrt
         return msvcrt.getwch()
@@ -40,8 +40,7 @@ def get_char():
 
 
 def input_password(prompt="  Password : "):
-    """Read password character by character, echoing '*' for each character.
-    Supports backspace."""
+    
     print(prompt, end="", flush=True)
     password = ""
     while True:
@@ -50,13 +49,13 @@ def input_password(prompt="  Password : "):
         if ch in ("\r", "\n"):
             print()
             break
-        # Backspace (Windows: \x08, Unix: \x7f)
+        
         elif ch in ("\x08", "\x7f"):
             if password:
                 password = password[:-1]
-                # Move cursor back, erase character, move back again
+            
                 print("\b \b", end="", flush=True)
-        # Ctrl+C
+        
         elif ch == "\x03":
             print()
             raise KeyboardInterrupt
@@ -206,7 +205,7 @@ class LinkedList:
                 return deleted
             current = current.next
         return None
-
+    
 
 # =========================
 # BST
@@ -270,6 +269,46 @@ class BST:
         self._inorder(self.root)
         thick_divider()
 
+    def delete(self, name):
+        target = name.lower()
+        parent = None
+        current = self.root
+
+        while current:
+            current_name = current.patient.name.lower()
+            if target == current_name:
+                break
+            parent = current
+            if target < current_name:
+                current = current.left
+            else:
+                current = current.right
+
+        if current is None:
+            return None
+
+        deleted = current.patient
+
+        if current.left and current.right:
+            succ_parent = current
+            succ = current.right
+            while succ.left:
+                succ_parent = succ
+                succ = succ.left
+            current.patient = succ.patient
+            parent = succ_parent
+            current = succ
+
+        child = current.right if current.left is None else current.left
+
+        if parent is None:
+            self.root = child
+        elif parent.left is current:
+            parent.left = child
+        else:
+            parent.right = child
+
+        return deleted
 
 # =========================
 # HELP MENU
@@ -351,7 +390,7 @@ def print_main_menu(queue):
 
 
 def is_valid_name(name):
-    """Allow only letters, spaces, and periods (for names like 'Jr.' or 'St.')"""
+    #Allow only letters, spaces, and periods (for names like 'Jr.)
     return all(c.isalpha() or c in (" ", ".") for c in name)
 
 
@@ -403,6 +442,8 @@ def handle_serve(queue, records, search_tree):
         search_tree.insert(patient)
         print("\n  ✔ Patient served successfully.")
         pause()
+    else:
+        pause()
 
 
 def handle_view_history(records):
@@ -414,6 +455,10 @@ def handle_view_history(records):
 def handle_search(search_tree):
     print_header("Search Patient")
     name = input("  Enter patient name: ").strip()
+    if not name:
+        print("  Name cannot be empty.")
+        pause()
+        return
     found = search_tree.search(name)
     thin_divider()
     if found:
@@ -424,16 +469,21 @@ def handle_search(search_tree):
     pause()
 
 
-def handle_delete(records):
+def handle_delete(records, search_tree):         
     print_header("Delete Record")
     name = input("  Enter patient name to delete: ").strip()
+    if not name:
+        print("  Name cannot be empty.")
+        pause()
+        return
     thin_divider()
     print(f"  This will permanently delete the record for \"{name.title()}\".")
     confirm = input('  Type "YES" to confirm: ').strip()
     if confirm == "YES":
         deleted = records.delete_record(name)
         if deleted:
-            print("\n  ✔ Record deleted successfully.")
+            search_tree.delete(name)
+            print("\n Record deleted successfully.")
             deleted.display()
         else:
             print("  Record not found.")
@@ -485,7 +535,7 @@ def main():
         elif choice == "4":
             handle_search(search_tree)
         elif choice == "5":
-            handle_delete(records)
+            handle_delete(records, search_tree)
         elif choice == "6":
             handle_display_all(search_tree)
         elif choice == "7":
