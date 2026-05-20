@@ -22,7 +22,7 @@ def thin_divider(width=50):
 
 
 def get_char():
-    """Read a single keypress without requiring Enter ."""
+    #Read a single keypress without requiring Enter
     if os.name == "nt":
         import msvcrt
         return msvcrt.getwch()
@@ -40,8 +40,8 @@ def get_char():
 
 
 def input_password(prompt="  Password : "):
-    """Read password character by character, echoing '*' for each character.
-    Supports backspace."""
+    #Read password character by character, echoing '*' for each character. Backspace Included
+
     print(prompt, end="", flush=True)
     password = ""
     while True:
@@ -351,7 +351,7 @@ def print_main_menu(queue):
 
 
 def is_valid_name(name):
-    """Allow only letters, spaces, and periods (for names like 'Jr.' or 'St.')"""
+    #Allow only letters, spaces, and periods (for names like 'Jr.)
     return all(c.isalpha() or c in (" ", ".") for c in name)
 
 
